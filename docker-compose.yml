@@ -2,34 +2,43 @@
 version: '3.8'
 
 services:
+  # Serviço Nginx para servir a aplicação Symfony
   nginx:
-    image: nginx:latest
+    image: nginx:latest # Usamos a imagem oficial do Nginx
     ports:
-      - "80:80"
+      - "80:80" # Mapeia a porta 80 do host para a porta 80 do container
     volumes:
-      - ./symfony:/var/www/html
-      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./symfony:/var/www/html # Monta o diretório do seu projeto Symfony
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf # Monta a configuração do Nginx
     depends_on:
-      - php
+      - php # Garante que o PHP esteja rodando antes do Nginx
 
+  # Serviço PHP-FPM para executar a aplicação Symfony
   php:
     build:
-      context: ./php
+      context: ./php # O Dockerfile para este serviço está no diretório 'php'
       dockerfile: Dockerfile
     volumes:
-      - ./symfony:/var/www/html
+      - ./symfony:/var/www/html # Monta o diretório do seu projeto Symfony
     environment:
+      # Variável de ambiente para a conexão com o banco de dados no Symfony
       DATABASE_URL: mysql://user:password@mysql:3306/db_name?serverVersion=8.0
+      # ATENÇÃO: Substitua 'user', 'password' e 'db_name' pelos valores desejados.
+      # Eles devem corresponder aos valores no serviço 'mysql' abaixo.
 
+  # Serviço MySQL para o banco de dados
   mysql:
-    image: mysql:8.0
+    image: mysql:8.0 # Usamos a imagem oficial do MySQL 8.0
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: db_name
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      # Credenciais do banco de dados
+      MYSQL_ROOT_PASSWORD: root_password # Senha do usuário root (só para desenvolvimento)
+      MYSQL_DATABASE: db_name # Nome do banco de dados
+      MYSQL_USER: user # Nome do usuário do banco de dados
+      MYSQL_PASSWORD: password # Senha do usuário do banco de dados
+      # ATENÇÃO: Substitua 'root_password', 'db_name', 'user' e 'password' pelos seus valores.
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql # Volume persistente para os dados do MySQL
 
 volumes:
+  # Volume nomeado para persistir os dados do MySQL, mesmo se o container for removido
   db_data:
